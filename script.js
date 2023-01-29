@@ -1,18 +1,36 @@
 "use strict";
 
+// initialize variables
 const gameBoard = (function () {
   let board = ["", "", "", "", "", "", "", "", ""];
+  let currentPlayer;
+  let currentMarker;
+  let moves = 0;
+  let roundWinner;
 
-  return { board };
+  const container = document.querySelector(".board");
+  const boxes = document.querySelectorAll(".box");
+
+  return {
+    board,
+    container,
+    boxes,
+    currentPlayer,
+    currentMarker,
+    moves,
+    roundWinner,
+  };
 })();
 
-const Player = (name, mark) => {
+// Player factory
+const Player = (name, marker) => {
   const getName = () => name;
-  const getMark = () => mark;
+  const getMarker = () => marker;
 
-  return { getName, getMark };
+  return { getName, getMarker };
 };
 
+// array index winning combinations
 const winner = (function () {
   const combinations = [
     [0, 1, 2],
@@ -25,63 +43,95 @@ const winner = (function () {
     [2, 4, 6],
   ];
 
-  return { combinations };
+  // winner and draw validation
+  const validation = () => {
+    for (let i = 0; i < combinations.length; i++) {
+      let combination = combinations[i];
+
+      let one = gameBoard.board[combination[0]];
+      let two = gameBoard.board[combination[1]];
+      let three = gameBoard.board[combination[2]];
+
+      if (one == "" || two == "" || three == "") {
+        continue;
+      }
+      if (one === two && two === three) {
+        gameBoard.roundWinner = gameBoard.currentPlayer;
+        console.log(`${one} ${two} ${three}`);
+        console.log(
+          `winner ${gameBoard.currentPlayer} ${gameBoard.currentMarker}`
+        );
+        gameBoard.container.classList.add("disabled");
+        break;
+      }
+      if (gameBoard.roundWinner == undefined && gameBoard.moves == 9) {
+        console.log("draw");
+      }
+    }
+  };
+
+  return { combinations, validation };
 })();
 
-const startGame = (function () {
+const game = (function () {
   // player vs player
   const PvP = () => {
     const player1 = Player("Player 1", "X");
     const player2 = Player("Player 2", "O");
-    let currentPlayer = player2.getMark();
 
-    let moves = 0;
-    let roundWinner;
+    initializePlayer(player1.getName(), player1.getMarker());
 
-    const container = document.querySelector(".board");
-    const boxes = document.querySelectorAll(".box");
+    console.log(gameBoard.currentMarker);
 
-    boxes.forEach((box) => {
+    gameBoard.boxes.forEach((box) => {
       box.addEventListener("click", (e) => {
-        if (currentPlayer == player2.getMark()) {
-          currentPlayer = player1.getMark();
-        } else {
-          currentPlayer = player2.getMark();
-        }
-        moves++;
-        box.textContent = currentPlayer;
-
+        box.textContent = gameBoard.currentMarker;
         box.classList.add("disabled");
 
-        gameBoard.board.splice(box.dataset.index, 1, currentPlayer);
+        gameBoard.moves++;
 
-        console.log(`${currentPlayer} marked index ${box.dataset.index}`);
+        gameBoard.board.splice(box.dataset.index, 1, gameBoard.currentMarker);
 
-        for (let i = 0; i < winner.combinations.length; i++) {
-          // console.log(i);
-          let combination = winner.combinations[i];
-          let one = gameBoard.board[combination[0]];
-          let two = gameBoard.board[combination[1]];
-          let three = gameBoard.board[combination[2]];
+        console.log(
+          `${gameBoard.currentPlayer}, "${gameBoard.currentMarker}" marked index ${box.dataset.index}`
+        );
 
-          if (
-            one == currentPlayer &&
-            two == currentPlayer &&
-            three == currentPlayer
-          ) {
-            console.log(`winner is ${currentPlayer}`);
-            container.classList.add("disabled");
-            roundWinner = currentPlayer;
-          }
-          if (moves == 9 && roundWinner == undefined) {
-            console.log("draw");
-          }
-        }
+        winner.validation();
+
+        playerSwitcher(
+          player1.getName(),
+          player1.getMarker(),
+          player2.getName(),
+          player2.getMarker()
+        );
       });
     });
   };
 
-  return { PvP };
+  // player vs computer
+  const PvC = () => {
+    //
+  };
+
+  // reusable helper functions, ie: PvP and PvC
+  function initializePlayer(playerName, playerMarker) {
+    gameBoard.currentPlayer = playerName;
+    gameBoard.currentMarker = playerMarker;
+  }
+
+  function playerSwitcher(
+    player1Name,
+    player1Marker,
+    player2Name,
+    player2Marker
+  ) {
+    gameBoard.currentPlayer =
+      gameBoard.currentPlayer == player1Name ? player2Name : player1Name;
+    gameBoard.currentMarker =
+      gameBoard.currentMarker == player1Marker ? player2Marker : player1Marker;
+  }
+
+  return { PvP, PvC };
 })();
 
-startGame.PvP();
+game.PvP();

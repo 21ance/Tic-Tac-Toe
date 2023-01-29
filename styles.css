@@ -28,3 +28,7 @@ body {
 .disabled {
     pointer-events: none;
 }
+
+.hidden {
+    display: none;
+}
