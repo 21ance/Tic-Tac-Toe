@@ -10,13 +10,13 @@ const gameBoard = (function () {
   let moves = 0;
   let roundOver = false;
 
-  const container = document.querySelector(".board");
+  const mainBoard = document.querySelector(".board");
   const boxes = document.querySelectorAll(".box");
   const score = document.querySelector("#score");
 
   const btnReset = document.querySelector("#reset");
   btnReset.addEventListener("click", (e) => {
-    container.classList.remove("disabled");
+    mainBoard.classList.remove("disabled");
     score.textContent = "Game Start!";
     gameBoard.board = ["", "", "", "", "", "", "", "", ""];
     gameBoard.moves = 0;
@@ -26,6 +26,7 @@ const gameBoard = (function () {
 
     boxes.forEach((box) => {
       box.classList.remove("disabled");
+      box.classList.remove("tic-tac-winner");
       box.textContent = "";
     });
   });
@@ -41,7 +42,7 @@ const gameBoard = (function () {
 
   return {
     board,
-    container,
+    mainBoard,
     boxes,
     previousPlayer,
     previousMarker,
@@ -89,7 +90,17 @@ const winner = (function () {
       }
       if (one === two && two === three) {
         gameBoard.roundOver = true;
-        gameBoard.container.classList.add("disabled");
+        gameBoard.mainBoard.classList.add("disabled");
+        // console.log(`${combination[0]}, ${combination[1]}, ${combination[2]}`);
+        gameBoard.mainBoard
+          .querySelector(`div:nth-child(${combination[0] + 1})`)
+          .classList.add("tic-tac-winner");
+        gameBoard.mainBoard
+          .querySelector(`div:nth-child(${combination[1] + 1})`)
+          .classList.add("tic-tac-winner");
+        gameBoard.mainBoard
+          .querySelector(`div:nth-child(${combination[2] + 1})`)
+          .classList.add("tic-tac-winner");
         break;
       }
     }
@@ -100,9 +111,9 @@ const winner = (function () {
 
 const game = (function () {
   // player vs player
-  const PvP = () => {
-    const player1 = Player("Player 1", "X");
-    const player2 = Player("Player 2", "O");
+  const PvP = (p1, p2) => {
+    const player1 = Player(p1, "X");
+    const player2 = Player(p2, "O");
 
     gameBoard.boxes.forEach((box) => {
       box.addEventListener("click", (e) => {
@@ -156,4 +167,30 @@ const game = (function () {
   return { PvP, PvC };
 })();
 
-game.PvP();
+//
+const screenManager = (() => {
+  const screenOne = document.querySelector(".screen-one");
+  const screenTwo = document.querySelector(".screen-two");
+  const mainSreen = document.querySelector(".main-screen");
+
+  const pvpForm = document.querySelector("#player-player-form");
+
+  const btnPvP = document.querySelector("#button-pvp");
+
+  btnPvP.addEventListener("click", (e) => {
+    screenOne.classList.add("hidden");
+    screenTwo.classList.remove("hidden");
+  });
+
+  pvpForm.addEventListener("submit", (e) => {
+    let playerOne = document.querySelector("#playerOne").value;
+    let playerTwo = document.querySelector("#playerTwo").value;
+
+    screenTwo.classList.add("hidden");
+    mainSreen.classList.remove("hidden");
+
+    game.PvP(playerOne, playerTwo);
+
+    e.preventDefault();
+  });
+})();
