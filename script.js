@@ -3,13 +3,30 @@
 // initialize variables
 const gameBoard = (function () {
   let board = ["", "", "", "", "", "", "", "", ""];
-  let currentPlayer;
-  let currentMarker;
+  let currentPlayer = "";
+  let currentMarker = "";
   let moves = 0;
-  let roundWinner;
+  let roundOver = false;
 
   const container = document.querySelector(".board");
   const boxes = document.querySelectorAll(".box");
+  const score = document.querySelector("#score");
+
+  const btnReset = document.querySelector("#reset");
+  btnReset.addEventListener("click", (e) => {
+    container.classList.remove("disabled");
+    score.textContent = "Game Start!";
+    gameBoard.board = ["", "", "", "", "", "", "", "", ""];
+    gameBoard.moves = 0;
+    gameBoard.currentPlayer = "";
+    gameBoard.currentMarker = "";
+    gameBoard.roundOver = false;
+
+    boxes.forEach((box) => {
+      box.classList.remove("disabled");
+      box.textContent = "";
+    });
+  });
 
   return {
     board,
@@ -18,7 +35,8 @@ const gameBoard = (function () {
     currentPlayer,
     currentMarker,
     moves,
-    roundWinner,
+    roundOver,
+    score,
   };
 })();
 
@@ -56,16 +74,14 @@ const winner = (function () {
         continue;
       }
       if (one === two && two === three) {
-        gameBoard.roundWinner = gameBoard.currentPlayer;
-        console.log(`${one} ${two} ${three}`);
-        console.log(
-          `winner ${gameBoard.currentPlayer} ${gameBoard.currentMarker}`
-        );
+        gameBoard.roundOver = true;
+        gameBoard.score.textContent = `Winner: ${gameBoard.currentMarker} (${gameBoard.currentPlayer})`;
+
         gameBoard.container.classList.add("disabled");
         break;
       }
-      if (gameBoard.roundWinner == undefined && gameBoard.moves == 9) {
-        console.log("draw");
+      if (!gameBoard.roundOver && gameBoard.moves == 9) {
+        gameBoard.score.textContent = `Draw!`;
       }
     }
   };
@@ -79,12 +95,10 @@ const game = (function () {
     const player1 = Player("Player 1", "X");
     const player2 = Player("Player 2", "O");
 
-    initializePlayer(player1.getName(), player1.getMarker());
-
-    console.log(gameBoard.currentMarker);
-
     gameBoard.boxes.forEach((box) => {
       box.addEventListener("click", (e) => {
+        initializePlayer(player1.getName(), player1.getMarker());
+
         box.textContent = gameBoard.currentMarker;
         box.classList.add("disabled");
 
@@ -92,9 +106,8 @@ const game = (function () {
 
         gameBoard.board.splice(box.dataset.index, 1, gameBoard.currentMarker);
 
-        console.log(
-          `${gameBoard.currentPlayer}, "${gameBoard.currentMarker}" marked index ${box.dataset.index}`
-        );
+        if (gameBoard.roundOver) return;
+        gameBoard.score.textContent = `Your turn: "${gameBoard.currentMarker}"`;
 
         winner.validation();
 
@@ -115,8 +128,10 @@ const game = (function () {
 
   // reusable helper functions, ie: PvP and PvC
   function initializePlayer(playerName, playerMarker) {
-    gameBoard.currentPlayer = playerName;
-    gameBoard.currentMarker = playerMarker;
+    if (gameBoard.currentPlayer == "" || gameBoard.currentMarker == "") {
+      gameBoard.currentPlayer = playerName;
+      gameBoard.currentMarker = playerMarker;
+    }
   }
 
   function playerSwitcher(

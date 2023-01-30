@@ -1,28 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway&family=Shadows+Into+Light&display=swap');
+
+:root {
+    --primary-bg: #f8fafc;
+    --border-color: #64748b;
+    --tic-tac-color: #0f172a;
+    --grid: 100px;
+}
+
 * {
     margin: 0;
     padding: 0;
 }
 
 body {
+    background-color: var(--primary-bg);
+    font-family: 'Raleway', sans-serif;
+}
+
+.container {
     display: flex;
-    height: 100vh;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    height: 100vh;
+    align-items: center;
+    gap: 40px;
 }
 
 .board {
     width: 80vw;
     display: grid;
     justify-content: center;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
+    grid-template-columns: repeat(3, var(--grid));
+    grid-template-rows: repeat(3, var(--grid));
 }
 
 .box {
     display: grid;
     place-items: center;
-    border: 1px solid black;
+    font-size: 3rem;
+    font-weight: bold;
+    /* font-family: 'Shadows Into Light', cursive; */
+    color: var(--tic-tac-color);
+}
+
+.box:nth-child(1),
+.box:nth-child(4),
+.box:nth-child(7) {
+    border-right: 1px solid var(--border-color);
+}
+
+.box:nth-child(3),
+.box:nth-child(6),
+.box:nth-child(9) {
+    border-left: 1px solid var(--border-color);
+}
+
+.box:nth-child(1),
+.box:nth-child(2),
+.box:nth-child(3) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.box:nth-child(7),
+.box:nth-child(8),
+.box:nth-child(9) {
+    border-top: 1px solid var(--border-color);
+}
+
+footer {
+    width: calc(var(--grid) * 3);
+    display: flex;
+    justify-content: end;
 }
 
 .disabled {
