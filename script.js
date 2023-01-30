@@ -3,6 +3,8 @@
 // initialize variables
 const gameBoard = (function () {
   let board = ["", "", "", "", "", "", "", "", ""];
+  let previousPlayer = "";
+  let previousMarker = "";
   let currentPlayer = "";
   let currentMarker = "";
   let moves = 0;
@@ -28,15 +30,27 @@ const gameBoard = (function () {
     });
   });
 
+  const displayStatus = () => {
+    if (!gameBoard.roundOver)
+      gameBoard.score.textContent = `Your turn, "${gameBoard.currentMarker}"`;
+    if (gameBoard.roundOver)
+      gameBoard.score.textContent = `${gameBoard.previousPlayer}, "${gameBoard.previousMarker}" Won!`;
+    if (!gameBoard.roundOver && gameBoard.moves == 9)
+      gameBoard.score.textContent = "Draw!";
+  };
+
   return {
     board,
     container,
     boxes,
+    previousPlayer,
+    previousMarker,
     currentPlayer,
     currentMarker,
     moves,
     roundOver,
     score,
+    displayStatus,
   };
 })();
 
@@ -48,8 +62,8 @@ const Player = (name, marker) => {
   return { getName, getMarker };
 };
 
-// array index winning combinations
 const winner = (function () {
+  // winning combinations
   const combinations = [
     [0, 1, 2],
     [3, 4, 5],
@@ -61,7 +75,7 @@ const winner = (function () {
     [2, 4, 6],
   ];
 
-  // winner and draw validation
+  // determine if round is over
   const validation = () => {
     for (let i = 0; i < combinations.length; i++) {
       let combination = combinations[i];
@@ -75,13 +89,8 @@ const winner = (function () {
       }
       if (one === two && two === three) {
         gameBoard.roundOver = true;
-        gameBoard.score.textContent = `Winner: ${gameBoard.currentMarker} (${gameBoard.currentPlayer})`;
-
         gameBoard.container.classList.add("disabled");
         break;
-      }
-      if (!gameBoard.roundOver && gameBoard.moves == 9) {
-        gameBoard.score.textContent = `Draw!`;
       }
     }
   };
@@ -102,14 +111,7 @@ const game = (function () {
         box.textContent = gameBoard.currentMarker;
         box.classList.add("disabled");
 
-        gameBoard.moves++;
-
         gameBoard.board.splice(box.dataset.index, 1, gameBoard.currentMarker);
-
-        if (gameBoard.roundOver) return;
-        gameBoard.score.textContent = `Your turn: "${gameBoard.currentMarker}"`;
-
-        winner.validation();
 
         playerSwitcher(
           player1.getName(),
@@ -117,6 +119,8 @@ const game = (function () {
           player2.getName(),
           player2.getMarker()
         );
+        winner.validation();
+        gameBoard.displayStatus();
       });
     });
   };
@@ -140,6 +144,9 @@ const game = (function () {
     player2Name,
     player2Marker
   ) {
+    gameBoard.moves++;
+    gameBoard.previousPlayer = gameBoard.currentPlayer;
+    gameBoard.previousMarker = gameBoard.currentMarker;
     gameBoard.currentPlayer =
       gameBoard.currentPlayer == player1Name ? player2Name : player1Name;
     gameBoard.currentMarker =

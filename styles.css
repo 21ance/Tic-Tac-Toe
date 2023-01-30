@@ -41,6 +41,11 @@ body {
     font-weight: bold;
     /* font-family: 'Shadows Into Light', cursive; */
     color: var(--tic-tac-color);
+    cursor: pointer;
+}
+
+.box:hover {
+    background-color: red;
 }
 
 .box:nth-child(1),
