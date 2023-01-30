@@ -31,13 +31,20 @@ const gameBoard = (function () {
     });
   });
 
-  const displayStatus = () => {
+  const displayPvP = () => {
     if (!gameBoard.roundOver)
       gameBoard.score.textContent = `Your turn, "${gameBoard.currentMarker}"`;
     if (gameBoard.roundOver)
       gameBoard.score.textContent = `${gameBoard.previousPlayer}, "${gameBoard.previousMarker}" Won!`;
     if (!gameBoard.roundOver && gameBoard.moves == 9)
       gameBoard.score.textContent = "Draw!";
+  };
+
+  const displayPvC = () => {
+    //
+    if (!gameBoard.roundOver && gameBoard.moves == 9) {
+      gameBoard.score.textContent = "Draw!";
+    }
   };
 
   return {
@@ -51,7 +58,8 @@ const gameBoard = (function () {
     moves,
     roundOver,
     score,
-    displayStatus,
+    displayPvP,
+    displayPvC,
   };
 })();
 
@@ -91,7 +99,6 @@ const winner = (function () {
       if (one === two && two === three) {
         gameBoard.roundOver = true;
         gameBoard.mainBoard.classList.add("disabled");
-        // console.log(`${combination[0]}, ${combination[1]}, ${combination[2]}`);
         gameBoard.mainBoard
           .querySelector(`div:nth-child(${combination[0] + 1})`)
           .classList.add("tic-tac-winner");
@@ -110,7 +117,7 @@ const winner = (function () {
 })();
 
 const game = (function () {
-  // player vs player
+  // player vs player logic
   const PvP = (p1, p2) => {
     const player1 = Player(p1, "X");
     const player2 = Player(p2, "O");
@@ -131,17 +138,64 @@ const game = (function () {
           player2.getMarker()
         );
         winner.validation();
-        gameBoard.displayStatus();
+        gameBoard.displayPvP();
       });
     });
   };
 
-  // player vs computer
-  const PvC = () => {
-    //
+  // player vs computer logic
+  const PvC = (p1, p2) => {
+    const player1 = Player(p1, "X");
+    const player2 = Player(p2, "O");
+
+    gameBoard.boxes.forEach((box) => {
+      box.addEventListener("click", () => {
+        initializePlayer(player1.getName(), player1.getMarker());
+
+        box.textContent = player1.getMarker();
+        box.classList.add("disabled");
+
+        gameBoard.board.splice(box.dataset.index, 1, player1.getMarker());
+
+        // computer logic start
+        let computerChoices = [];
+
+        // get valid array value
+        for (let i = 0; i < gameBoard.board.length; i++) {
+          if (gameBoard.board[i] == "") {
+            computerChoices.push(i);
+          }
+        }
+
+        // stop if no array value / every tile is filled
+        if (!computerChoices.length == 0) {
+          gameBoard.moves++;
+          const random = Math.floor(Math.random() * computerChoices.length);
+          let computerChoice = computerChoices[random];
+          gameBoard.board.splice(computerChoice, 1, player2.getMarker());
+
+          gameBoard.mainBoard
+            .querySelector(`div:nth-child(${computerChoice + 1})`)
+            .classList.add("disabled");
+          gameBoard.mainBoard.querySelector(
+            `div:nth-child(${computerChoice + 1})`
+          ).textContent = player2.getMarker();
+        }
+        playerSwitcher(
+          player1.getName(),
+          player1.getMarker(),
+          player2.getName(),
+          player2.getMarker()
+        );
+        winner.validation();
+        gameBoard.displayPvP();
+
+        console.log(gameBoard.board);
+      });
+    });
   };
 
-  // reusable helper functions, ie: PvP and PvC
+  // reusable helper functions for PvP and PvC
   function initializePlayer(playerName, playerMarker) {
     if (gameBoard.currentPlayer == "" || gameBoard.currentMarker == "") {
       gameBoard.currentPlayer = playerName;
@@ -156,6 +210,7 @@ const game = (function () {
     player2Marker
   ) {
     gameBoard.moves++;
+    if (player2Name == "Computer") return;
     gameBoard.previousPlayer = gameBoard.currentPlayer;
     gameBoard.previousMarker = gameBoard.currentMarker;
     gameBoard.currentPlayer =
@@ -167,16 +222,20 @@ const game = (function () {
   return { PvP, PvC };
 })();
 
-//
+// handles switching content through class hidden
 const screenManager = (() => {
   const screenOne = document.querySelector(".screen-one");
   const screenTwo = document.querySelector(".screen-two");
+  const screenThree = document.querySelector(".screen-three");
   const mainSreen = document.querySelector(".main-screen");
 
   const pvpForm = document.querySelector("#player-player-form");
+  const pvcForm = document.querySelector("#player-computer-form");
 
   const btnPvP = document.querySelector("#button-pvp");
+  const btnPvC = document.querySelector("#button-pvc");
 
+  // Player vs Player
   btnPvP.addEventListener("click", (e) => {
     screenOne.classList.add("hidden");
     screenTwo.classList.remove("hidden");
@@ -190,6 +249,23 @@ const screenManager = (() => {
     mainSreen.classList.remove("hidden");
 
     game.PvP(playerOne, playerTwo);
+
+    e.preventDefault();
+  });
+
+  // Player vs Computer
+  btnPvC.addEventListener("click", (e) => {
+    screenOne.classList.add("hidden");
+    screenThree.classList.remove("hidden");
+  });
+
+  pvcForm.addEventListener("submit", (e) => {
+    let playerOne = document.querySelector("#soloPlayer").value;
+
+    screenThree.classList.add("hidden");
+    mainSreen.classList.remove("hidden");
+
+    game.PvC(playerOne, "Computer");
 
     e.preventDefault();
   });
