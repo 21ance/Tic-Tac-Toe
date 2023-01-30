@@ -122,8 +122,7 @@ footer {
 }
 
 .screen-one .button-pvp:hover,
-.screen-two button:hover,
-.screen-three button:hover {
+.screen-two button:hover {
     background-color: var(--button-one-hover);
 }
 
@@ -145,21 +144,18 @@ footer {
     gap: 20px;
 }
 
-.screen-two span,
-.screen-three span {
+.screen-two span {
     font-size: 2.5rem;
 }
 
-.screen-two input,
-.screen-three input {
+.screen-two input {
     font-size: 1.4rem;
     padding: 5px;
     border-radius: 4px;
     padding: 15px 40px;
 }
 
-.screen-two button,
-.screen-three button {
+.screen-two button {
     font-size: 1.2rem;
     border-radius: 8px;
     padding: 15px 40px;
